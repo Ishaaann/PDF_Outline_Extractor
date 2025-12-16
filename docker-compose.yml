@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  pdf-outline-extractor:
+    build: .
+    container_name: adobe-pdf-extractor
+    volumes:
+      - ./input:/app/input:ro
+      - ./output:/app/output
+    environment:
+      - PYTHONUNBUFFERED=1
+    working_dir: /app
+    command: python generate_outline.py
+
+  # Service for training (optional)
+  pdf-trainer:
+    build: .
+    container_name: adobe-pdf-trainer
+    volumes:
+      - ./input:/app/input:ro
+      - ./output:/app/output
+      - .:/app/workspace
+    environment:
+      - PYTHONUNBUFFERED=1
+    working_dir: /app
+    command: python train_model.py
+    profiles:
+      - training
+
+  # Service for feature extraction (optional)
+  pdf-feature-extractor:
+    build: .
+    container_name: adobe-pdf-features
+    volumes:
+      - ./input:/app/input:ro
+      - ./output:/app/output
+      - .:/app/workspace
+    environment:
+      - PYTHONUNBUFFERED=1
+    working_dir: /app
+    command: python extract_lines.py
+    profiles:
+      - training
